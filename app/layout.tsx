@@ -7,9 +7,9 @@ import BottomNav from '@/components/layout/BottomNav';
 import { Suspense } from 'react';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://beach-now.vercel.app'),
   title: '바다지금 — 전국 해수욕장 실시간 현황',
-  description:
-    '전국 해수욕장의 실시간 CCTV 영상과 기상 현황을 한눈에 확인하세요.',
+  description: '전국 해수욕장의 실시간 CCTV 영상과 기상 현황을 한눈에 확인하세요.',
   openGraph: {
     title: '바다지금 — 전국 해수욕장 실시간 현황',
     description: '지금 바다는 어때요? 실시간으로 확인하세요.',
