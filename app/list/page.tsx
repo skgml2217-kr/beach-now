@@ -1,0 +1,117 @@
+'use client';
+
+import { useState, useMemo, useEffect, useDeferredValue } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Search, SlidersHorizontal } from 'lucide-react';
+import BeachCard from '@/components/beach/BeachCard';
+import { MOCK_BEACHES } from '@/lib/mockData';
+import { REGION_META, REGIONS, SORT_OPTIONS } from '@/lib/constants';
+import type { Region } from '@/lib/types';
+import type { SortOption } from '@/lib/constants';
+
+export default function ListPage() {
+  const searchParams = useSearchParams();
+  const initRegion = (searchParams.get('region') ?? 'all') as Region;
+
+  const [region, setRegion] = useState<Region>(initRegion);
+  const [sort, setSort] = useState<string>('crowd');
+  const [query, setQuery] = useState('');
+  const deferredQuery = useDeferredValue(query);
+
+  // URL 파라미터 변경 시 region 상태 동기화
+  useEffect(() => {
+    const r = (searchParams.get('region') ?? 'all') as Region;
+    setRegion(r);
+  }, [searchParams]);
+
+  /* 필터링 + 정렬 */
+  const filtered = useMemo(() => {
+    let list = [...MOCK_BEACHES];
+
+    if (region !== 'all') list = list.filter((b) => b.region === region);
+
+    if (deferredQuery.trim()) {
+      const q = deferredQuery.trim().toLowerCase();
+      list = list.filter((b) => b.name.toLowerCase().includes(q));
+    }
+
+    if (sort === 'crowd') {
+      const order = { low: 0, medium: 1, high: 2 };
+      list.sort((a, b) => order[a.crowdLevel] - order[b.crowdLevel]);
+    } else if (sort === 'temperature') {
+      list.sort((a, b) => b.id.length - a.id.length); // 목 데이터용 대체 정렬
+    } else {
+      list.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+    }
+
+    return list;
+  }, [region, sort, query]);
+
+  return (
+    <div>
+      {/* ── 필터 바 (#list-filter-bar) ── */}
+      <div
+        className="sticky top-14 z-40 bg-background/90 backdrop-blur py-3 mb-6
+                      border-b border-primary/10 -mx-4 px-4"
+      >
+        {/* 검색 + 정렬 */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-navy/30"
+            />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="해수욕장 이름 검색"
+              className="w-full pl-8 pr-4 py-2 rounded-full border border-primary/20
+                         bg-white text-sm text-navy placeholder:text-navy/30
+                         focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </div>
+          <div className="relative">
+            <SlidersHorizontal
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-navy/40 pointer-events-none"
+            />
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="pl-8 pr-4 py-2 rounded-full border border-primary/20
+                         bg-white text-sm text-navy appearance-none cursor-pointer
+                         focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* 결과 수 */}
+        <p className="text-xs text-navy/40 mt-2">
+          총 {filtered.length}개 해수욕장
+        </p>
+      </div>
+
+      {/* ── 카드 그리드 (#list-card-grid) ── */}
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 gap-3 text-navy/30">
+          <span className="text-5xl">🥲</span>
+          <p className="font-medium">해수욕장을 찾을 수 없어요</p>
+          <p className="text-sm">다른 검색어나 지역을 선택해보세요</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map((beach) => (
+            <BeachCard key={beach.id} beach={beach} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── 기본 설정 ── */
+html {
+  scroll-behavior: smooth;
+  background-color: #f0fbff;
+}
+
+body {
+  color: #2c4a5a;
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: #f0fbff;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── 커스텀 스크롤바 ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #e0faf4;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb {
+  background: #7ee8c8;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4dc9e6;
+}
+
+/* ── 유틸리티 레이어 ── */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  /* 호버 카드 리프트 */
+  .card-hover {
+    @apply transition-transform duration-200 hover:-translate-y-1;
+  }
+}
+
+/* ── 스크롤바 숨김 유틸 ── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── 모바일 하단 탭바 여백 ── */
+@media (max-width: 767px) {
+  main {
+    padding-bottom: 80px;
+  }
+}
+
+/* ── 포커스 스타일 (접근성) ── */
+:focus-visible {
+  outline: 2px solid #4dc9e6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── 카드 호버 리프트 ── */
+.card-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px rgba(77, 201, 230, 0.18);
+}
