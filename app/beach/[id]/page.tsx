@@ -198,10 +198,7 @@ export default async function BeachDetailPage({
           </div>
 
           {/* 길찾기 버튼 */}
-          <a
-            href={`https://map.kakao.com/link/search/${encodeURIComponent(
-              beach.name
-            )}`}
+          href={`https://map.kakao.com/link/map/${encodeURIComponent(beach.name)},${beach.location.lat},${beach.location.lng}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 mt-1 px-4 py-2 rounded-full
