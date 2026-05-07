@@ -11,17 +11,21 @@ import type { SortOption } from '@/lib/constants';
 
 export default function ListPage() {
   const searchParams = useSearchParams();
+
   const initRegion = (searchParams.get('region') ?? 'all') as Region;
+  const initQuery  = searchParams.get('q') ?? '';
 
   const [region, setRegion] = useState<Region>(initRegion);
-  const [sort, setSort] = useState<string>('crowd');
-  const [query, setQuery] = useState('');
+  const [sort,   setSort]   = useState<string>('crowd');
+  const [query,  setQuery]  = useState(initQuery);
   const deferredQuery = useDeferredValue(query);
 
-  // URL 파라미터 변경 시 region 상태 동기화
+  // URL 파라미터 변경 시 region, query 상태 동기화
   useEffect(() => {
     const r = (searchParams.get('region') ?? 'all') as Region;
+    const q = searchParams.get('q') ?? '';
     setRegion(r);
+    setQuery(q);
   }, [searchParams]);
 
   /* 필터링 + 정렬 */
@@ -39,20 +43,20 @@ export default function ListPage() {
       const order = { low: 0, medium: 1, high: 2 };
       list.sort((a, b) => order[a.crowdLevel] - order[b.crowdLevel]);
     } else if (sort === 'temperature') {
-      list.sort((a, b) => b.id.length - a.id.length); // 목 데이터용 대체 정렬
+      list.sort((a, b) => b.id.length - a.id.length);
     } else {
       list.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
     }
 
     return list;
-  }, [region, sort, query]);
+  }, [region, sort, deferredQuery]);
 
   return (
     <div>
       {/* ── 필터 바 (#list-filter-bar) ── */}
       <div
         className="sticky top-14 z-40 bg-background/90 backdrop-blur py-3 mb-6
-                      border-b border-primary/10 -mx-4 px-4"
+                   border-b border-primary/10 -mx-4 px-4"
       >
         {/* 검색 + 정렬 */}
         <div className="flex gap-2">
