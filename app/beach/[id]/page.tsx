@@ -72,9 +72,9 @@ export default async function BeachDetailPage({
     nearby.map((b, i) => [b.id, nearbyWeathers[i] as WeatherData])
   );
 
-  const region      = REGION_META[beach.region];
-  const cameras     = CCTV_CAMERAS[beach.id] ?? [];
-  const crowdLevel  = calculateCrowdLevel(beach.id);
+  const region       = REGION_META[beach.region];
+  const cameras      = CCTV_CAMERAS[beach.id] ?? [];
+  const crowdLevel   = calculateCrowdLevel(beach.id);
   const crowdMessage = getCrowdMessage(crowdLevel);
 
   /* 편의시설 목록 */
@@ -86,11 +86,12 @@ export default async function BeachDetailPage({
   ];
 
   /* 지도 링크 */
-  const kakaoMapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(beach.name)}`;
+  const kakaoMapUrl = 'https://map.kakao.com/link/search/' + encodeURIComponent(beach.name);
   const naverMapUrl = 'https://map.naver.com/v5/search/' + encodeURIComponent(beach.name) + '?c=' + beach.location.lng + ',' + beach.location.lat + ',15,0,0,0,dh';
-  
+
   return (
     <div className="space-y-10 max-w-4xl mx-auto">
+
       {/* 뒤로가기 */}
       <Link
         href="/list"
@@ -155,14 +156,17 @@ export default async function BeachDetailPage({
       <section id="detail-info">
         <h2 className="text-lg font-bold text-navy mb-3">ℹ️ 해수욕장 정보</h2>
         <div className="bg-white rounded-2xl shadow-card p-5 space-y-4">
+
           <div className="flex items-start gap-2 text-sm text-navy/70">
             <MapPin size={15} className="text-accent mt-0.5 shrink-0" />
             <span>{beach.address}</span>
           </div>
+
           <div className="flex items-center gap-2 text-sm text-navy/70">
             <Calendar size={15} className="text-primary shrink-0" />
             <span>운영 기간: {beach.operationPeriod}</span>
           </div>
+
           <div className="flex flex-wrap gap-2 pt-1">
             {facilities.map((f) => (
               <span
@@ -176,28 +180,27 @@ export default async function BeachDetailPage({
           </div>
 
           {/* 지도 버튼 2개 */}
-<div className="flex gap-2 flex-wrap mt-1">
-  
-    href={kakaoMapUrl}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="inline-flex items-center gap-2 px-4 py-2 rounded-full
-               text-sm font-medium hover:brightness-105 transition-all"
-    style={{ backgroundColor: '#FFCD00', color: '#3C1E1E' }}
-  >
-    🗺️ 카카오맵
-  </a>
-  
-    href={naverMapUrl}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="inline-flex items-center gap-2 px-4 py-2 rounded-full
-               text-sm font-medium hover:brightness-105 transition-all"
-    style={{ backgroundColor: '#03C75A', color: '#ffffff' }}
-  >
-    🗺️ 네이버지도
-  </a>
-</div>
+          <div className="flex gap-2 flex-wrap">
+            <a
+              href={kakaoMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium hover:brightness-105 transition-all"
+              style={{ backgroundColor: '#FFCD00', color: '#3C1E1E' }}
+            >
+              🗺️ 카카오맵
+            </a>
+            <a
+              href={naverMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium hover:brightness-105 transition-all"
+              style={{ backgroundColor: '#03C75A', color: '#ffffff' }}
+            >
+              🗺️ 네이버지도
+            </a>
+          </div>
+
         </div>
       </section>
 
@@ -216,6 +219,7 @@ export default async function BeachDetailPage({
           </div>
         </section>
       )}
+
     </div>
   );
 }
