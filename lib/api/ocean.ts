@@ -94,12 +94,12 @@ export async function fetchOceanData(beachId: string): Promise<OceanResult> {
     /* 수온 + 파고 병렬 호출 */
     const [tempRes, waveRes] = await Promise.all([
       fetch(
-        `${WATER_TEMP_URL}?serviceKey=${OCEAN_API_KEY}&obsCode=${tempStation}&startDate=${today}&endDate=${today}&resultType=json`,
+        `${WATER_TEMP_URL}?serviceKey=${OCEAN_API_KEY}&obsCode=${tempStation}&startDate=${today}&endDate=${today}&numOfRows=1&pageNo=1&_type=json`,
         { next: { revalidate: 600 } }
       ),
       waveStation
         ? fetch(
-            `${WAVE_URL}?serviceKey=${OCEAN_API_KEY}&obsCode=${waveStation}&startDate=${today}&endDate=${today}&resultType=json`,
+            `${WAVE_URL}?serviceKey=${OCEAN_API_KEY}&obsCode=${waveStation}&startDate=${today}&endDate=${today}&numOfRows=1&pageNo=1&_type=json`,
             { next: { revalidate: 600 } }
           )
         : Promise.resolve(null),
@@ -108,25 +108,35 @@ export async function fetchOceanData(beachId: string): Promise<OceanResult> {
     /* 수온 파싱 */
     let waterTemp = fallback.waterTemp;
     if (tempRes.ok) {
-      const tempJson  = await tempRes.json();
-      const tempItems = tempJson?.response?.body?.items?.item;
-      const tempData  = Array.isArray(tempItems)
-        ? tempItems[tempItems.length - 1]
-        : tempItems;
-      const parsed = parseFloat(tempData?.waterTemp ?? tempData?.water_temp ?? 'NaN');
-      if (!isNaN(parsed) && parsed > 0 && parsed < 40) waterTemp = parsed;
+      const text = await tempRes.text();
+      if (text.trim().startsWith('<')) {
+        console.warn('[OCEAN] 수온 XML 에러 응답 — 목 데이터 사용:', text.slice(0, 100));
+      } else {
+        const tempJson  = JSON.parse(text);
+        const tempItems = tempJson?.response?.body?.items?.item;
+        const tempData  = Array.isArray(tempItems)
+          ? tempItems[tempItems.length - 1]
+          : tempItems;
+        const parsed = parseFloat(tempData?.waterTemp ?? tempData?.water_temp ?? 'NaN');
+        if (!isNaN(parsed) && parsed > 0 && parsed < 40) waterTemp = parsed;
+      }
     }
 
     /* 파고 파싱 */
     let waveHeight = fallback.waveHeight;
     if (waveRes && waveRes.ok) {
-      const waveJson  = await waveRes.json();
-      const waveItems = waveJson?.response?.body?.items?.item;
-      const waveData  = Array.isArray(waveItems)
-        ? waveItems[waveItems.length - 1]
-        : waveItems;
-      const parsed = parseFloat(waveData?.waveHeight ?? waveData?.wave_height ?? 'NaN');
-      if (!isNaN(parsed) && parsed >= 0 && parsed < 20) waveHeight = parsed;
+      const text = await waveRes.text();
+      if (text.trim().startsWith('<')) {
+        console.warn('[OCEAN] 파고 XML 에러 응답 — 목 데이터 사용:', text.slice(0, 100));
+      } else {
+        const waveJson  = JSON.parse(text);
+        const waveItems = waveJson?.response?.body?.items?.item;
+        const waveData  = Array.isArray(waveItems)
+          ? waveItems[waveItems.length - 1]
+          : waveItems;
+        const parsed = parseFloat(waveData?.waveHeight ?? waveData?.wave_height ?? 'NaN');
+        if (!isNaN(parsed) && parsed >= 0 && parsed < 20) waveHeight = parsed;
+      }
     }
 
     console.log(`[OCEAN] ${beachId} 수온: ${waterTemp}°C, 파고: ${waveHeight}m`);
