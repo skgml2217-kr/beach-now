@@ -2,7 +2,7 @@ import type { Beach, Region } from '../types';
 import { MOCK_BEACHES } from '../mockData';
 
 const TOUR_API_KEY = process.env.TOUR_API_KEY ?? '';
-const BASE_URL = 'https://apis.data.go.kr/B551011/KorService1';
+const BASE_URL = 'https://apis.data.go.kr/B551011/KorService2';
 
 /* ── 지역 코드 매핑 ── */
 const REGION_AREA_CODE: Partial<Record<Region, string>> = {
