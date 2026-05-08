@@ -186,7 +186,7 @@ export default async function BeachDetailPage({
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium hover:brightness-105 transition-all"
-              style={{ backgroundColor: '#FFCD00', color: '#3C1E1E' }}
+              style={{ backgroundColor: '#FEE500', color: '#3C1E1E' }}
             >
               🗺️ 카카오맵
             </a>
