@@ -5,6 +5,7 @@ import { Thermometer, Droplets, Wind } from 'lucide-react';
 import { CrowdBadge } from '@/components/ui/Badge';
 import { REGION_META, WEATHER_ICON } from '@/lib/constants';
 import { generateWeatherData } from '@/lib/mockData';
+import { calculateCrowdLevel } from '@/lib/utils/crowdLevel';
 import type { Beach } from '@/lib/types';
 
 interface BeachCardProps {
