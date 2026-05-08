@@ -82,7 +82,7 @@ export async function fetchBeachList(region?: Region): Promise<Beach[]> {
           cat3: 'A01011700', // 해수욕장
         });
 
-        const res = await fetch(`${BASE_URL}/areaBasedList1?${params}`, {
+        const res = await fetch(`${BASE_URL}/areaBasedList2?${params}`, {
           next: { revalidate: 3600 },
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
