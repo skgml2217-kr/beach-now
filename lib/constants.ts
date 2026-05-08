@@ -50,7 +50,7 @@ export const CROWD_COLOR: Record<string, string> = {
 
 /* ── 데이터 출처 ── */
 export const DATA_SOURCES = [
-  { name: '기상청 날씨마루', url: 'https://www.weather.go.kr' },
+  { name: '기상청 날씨마루', url: 'https://www.kma.go.kr' },
   { name: '국립해양조사원', url: 'https://www.khoa.go.kr' },
   { name: '한국관광공사 TourAPI', url: 'https://api.visitkorea.or.kr' },
 ];
