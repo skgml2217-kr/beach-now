@@ -171,7 +171,7 @@ export default async function BeachDetailPage({
             ))}
           </div>
           <a
-            href={`https://map.kakao.com/link/map/${encodeURIComponent(beach.name)},${beach.location.lat},${beach.location.lng}`}
+            href={`https://map.kakao.com/link/search/${encodeURIComponent(beach.address)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 mt-1 px-4 py-2 rounded-full bg-accent text-white text-sm font-medium hover:brightness-105 transition-all"
