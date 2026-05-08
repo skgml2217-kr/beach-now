@@ -79,11 +79,15 @@ export default async function BeachDetailPage({
 
   /* 편의시설 목록 */
   const facilities = [
-    { icon: <ParkingSquare size={14} />, label: '주차장',  ok: beach.facilities.parking },
-    { icon: <ShowerHead   size={14} />, label: '샤워장',  ok: beach.facilities.shower },
-    { icon: <ShieldCheck  size={14} />, label: '구조대',  ok: beach.facilities.lifeguard },
-    { icon: <ChefHat      size={14} />, label: '식당',    ok: beach.facilities.restaurant },
+    { icon: <ParkingSquare size={14} />, label: '주차장', ok: beach.facilities.parking },
+    { icon: <ShowerHead   size={14} />, label: '샤워장', ok: beach.facilities.shower },
+    { icon: <ShieldCheck  size={14} />, label: '구조대', ok: beach.facilities.lifeguard },
+    { icon: <ChefHat      size={14} />, label: '식당',   ok: beach.facilities.restaurant },
   ];
+
+  /* 지도 링크 */
+  const kakaoMapUrl = `https://map.kakao.com/link/map/${encodeURIComponent(beach.name)},${beach.location.lat},${beach.location.lng}`;
+  const naverMapUrl = `https://map.naver.com/v5/search/${encodeURIComponent(beach.name)}?c=${beach.location.lng},${beach.location.lat},15,0,0,0,dh`;
 
   return (
     <div className="space-y-10 max-w-4xl mx-auto">
@@ -170,14 +174,30 @@ export default async function BeachDetailPage({
               </span>
             ))}
           </div>
-          <a
-            href={`https://map.kakao.com/link/search/${encodeURIComponent(beach.address)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 mt-1 px-4 py-2 rounded-full bg-accent text-white text-sm font-medium hover:brightness-105 transition-all"
-          >
-            🗺️ 카카오맵으로 길찾기
-          </a>
+
+          {/* 지도 버튼 2개 */}
+          <div className="flex gap-2 flex-wrap mt-1">
+            <a
+              href={kakaoMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full
+                         bg-accent text-white text-sm font-medium
+                         hover:brightness-105 transition-all"
+            >
+              🗺️ 카카오맵
+            </a>
+            <a
+              href={naverMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full
+                         bg-primary text-white text-sm font-medium
+                         hover:brightness-105 transition-all"
+            >
+              🗺️ 네이버지도
+            </a>
+          </div>
         </div>
       </section>
 
