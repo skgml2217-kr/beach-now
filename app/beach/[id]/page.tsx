@@ -18,6 +18,7 @@ import { MOCK_BEACHES } from '@/lib/mockData';
 import { REGION_META, WEATHER_ICON, CCTV_CAMERAS } from '@/lib/constants';
 import { calculateCrowdLevel, getCrowdMessage } from '@/lib/utils/crowdLevel';
 import { notFound } from 'next/navigation';
+import type { WeatherData } from '@/lib/types';
 
 /* ── 동적 메타데이터 ── */
 export async function generateMetadata({
@@ -54,40 +55,34 @@ export default async function BeachDetailPage({
   const beach = await getBeachById(params.id);
   if (!beach) notFound();
 
-  const weather = await getWeather(beach.id);
-  const hourly = await getHourlyForecast(beach.id);
-  const region = REGION_META[beach.region];
-  const cameras = CCTV_CAMERAS[beach.id] ?? [];
-  const crowdLevel = calculateCrowdLevel(beach.id);
-  const crowdMessage = getCrowdMessage(crowdLevel);
-
   /* 주변 해수욕장 (같은 지역, 본인 제외, 최대 3개) */
   const nearby = MOCK_BEACHES.filter(
     (b) => b.region === beach.region && b.id !== beach.id
   ).slice(0, 3);
 
+  /* 현재 해수욕장 + 주변 해수욕장 날씨 병렬 fetch */
+  const [weather, hourly, ...nearbyWeathers] = await Promise.all([
+    getWeather(beach.id),
+    getHourlyForecast(beach.id),
+    ...nearby.map((b) => getWeather(b.id)),
+  ]);
+
+  /* 주변 해수욕장 날씨 맵 */
+  const nearbyWeatherMap = Object.fromEntries(
+    nearby.map((b, i) => [b.id, nearbyWeathers[i] as WeatherData])
+  );
+
+  const region      = REGION_META[beach.region];
+  const cameras     = CCTV_CAMERAS[beach.id] ?? [];
+  const crowdLevel  = calculateCrowdLevel(beach.id);
+  const crowdMessage = getCrowdMessage(crowdLevel);
+
   /* 편의시설 목록 */
   const facilities = [
-    {
-      icon: <ParkingSquare size={14} />,
-      label: '주차장',
-      ok: beach.facilities.parking,
-    },
-    {
-      icon: <ShowerHead size={14} />,
-      label: '샤워장',
-      ok: beach.facilities.shower,
-    },
-    {
-      icon: <ShieldCheck size={14} />,
-      label: '구조대',
-      ok: beach.facilities.lifeguard,
-    },
-    {
-      icon: <ChefHat size={14} />,
-      label: '식당',
-      ok: beach.facilities.restaurant,
-    },
+    { icon: <ParkingSquare size={14} />, label: '주차장',  ok: beach.facilities.parking },
+    { icon: <ShowerHead   size={14} />, label: '샤워장',  ok: beach.facilities.shower },
+    { icon: <ShieldCheck  size={14} />, label: '구조대',  ok: beach.facilities.lifeguard },
+    { icon: <ChefHat      size={14} />, label: '식당',    ok: beach.facilities.restaurant },
   ];
 
   return (
@@ -136,9 +131,7 @@ export default async function BeachDetailPage({
 
       {/* ── 섹션 C: 시간별 예보 (#detail-hourly) ── */}
       <section id="detail-hourly">
-        <h2 className="text-lg font-bold text-navy mb-3">
-          🕐 오늘의 시간별 예보
-        </h2>
+        <h2 className="text-lg font-bold text-navy mb-3">🕐 오늘의 시간별 예보</h2>
         <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
           {hourly.map((h) => (
             <div
@@ -147,9 +140,7 @@ export default async function BeachDetailPage({
             >
               <span className="text-xs text-navy/40 font-medium">{h.time}</span>
               <span className="text-2xl">{WEATHER_ICON[h.weatherIcon]}</span>
-              <span className="text-sm font-bold text-navy">
-                {h.temperature}°
-              </span>
+              <span className="text-sm font-bold text-navy">{h.temperature}°</span>
               <span className="text-xs text-sky-400">💧 {h.rainProb}%</span>
             </div>
           ))}
@@ -173,20 +164,14 @@ export default async function BeachDetailPage({
               <span
                 key={f.label}
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium
-                  ${
-                    f.ok
-                      ? 'bg-secondary/20 text-teal-700'
-                      : 'bg-navy/5 text-navy/30 line-through'
-                  }`}
+                  ${f.ok ? 'bg-secondary/20 text-teal-700' : 'bg-navy/5 text-navy/30 line-through'}`}
               >
                 {f.icon} {f.label}
               </span>
             ))}
           </div>
           <a
-            href={`https://map.kakao.com/link/map/${encodeURIComponent(
-              beach.name
-            )},${beach.location.lat},${beach.location.lng}`}
+            href={`https://map.kakao.com/link/map/${encodeURIComponent(beach.name)},${beach.location.lat},${beach.location.lng}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 mt-1 px-4 py-2 rounded-full bg-accent text-white text-sm font-medium hover:brightness-105 transition-all"
@@ -202,7 +187,11 @@ export default async function BeachDetailPage({
           <h2 className="text-lg font-bold text-navy mb-3">📍 주변 해수욕장</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {nearby.map((b) => (
-              <BeachCard key={b.id} beach={b} />
+              <BeachCard
+                key={b.id}
+                beach={b}
+                weather={nearbyWeatherMap[b.id]}
+              />
             ))}
           </div>
         </section>
