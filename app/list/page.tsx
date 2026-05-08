@@ -1,6 +1,12 @@
 'use client';
 
-import { useState, useMemo, useEffect, useDeferredValue, Suspense } from 'react';
+import {
+  useState,
+  useMemo,
+  useEffect,
+  useDeferredValue,
+  Suspense,
+} from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import BeachCard from '@/components/beach/BeachCard';
@@ -12,11 +18,11 @@ function ListContent() {
   const searchParams = useSearchParams();
 
   const initRegion = (searchParams.get('region') ?? 'all') as Region;
-  const initQuery  = searchParams.get('q') ?? '';
+  const initQuery = searchParams.get('q') ?? '';
 
   const [region, setRegion] = useState<Region>(initRegion);
-  const [sort,   setSort]   = useState<string>('crowd');
-  const [query,  setQuery]  = useState(initQuery);
+  const [sort, setSort] = useState<string>('crowd');
+  const [query, setQuery] = useState(initQuery);
   const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
@@ -46,11 +52,16 @@ function ListContent() {
 
   return (
     <div>
-      <div className="sticky top-14 z-40 bg-background/90 backdrop-blur py-3 mb-6
-                      border-b border-primary/10 -mx-4 px-4">
+      <div
+        className="sticky top-14 z-40 bg-background/90 backdrop-blur py-3 mb-6
+                      border-b border-primary/10 -mx-4 px-4"
+      >
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-navy/30" />
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-navy/30"
+            />
             <input
               type="text"
               value={query}
@@ -62,7 +73,10 @@ function ListContent() {
             />
           </div>
           <div className="relative">
-            <SlidersHorizontal size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-navy/40 pointer-events-none" />
+            <SlidersHorizontal
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-navy/40 pointer-events-none"
+            />
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
@@ -71,12 +85,16 @@ function ListContent() {
                          focus:outline-none focus:ring-2 focus:ring-primary/30"
             >
               {SORT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
               ))}
             </select>
           </div>
         </div>
-        <p className="text-xs text-navy/40 mt-2">총 {filtered.length}개 해수욕장</p>
+        <p className="text-xs text-navy/40 mt-2">
+          총 {filtered.length}개 해수욕장
+        </p>
       </div>
 
       {filtered.length === 0 ? (
@@ -98,7 +116,13 @@ function ListContent() {
 
 export default function ListPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center py-20 text-navy/30">불러오는 중...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex justify-center py-20 text-navy/30">
+          불러오는 중...
+        </div>
+      }
+    >
       <ListContent />
     </Suspense>
   );
