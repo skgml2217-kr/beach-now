@@ -45,7 +45,7 @@ export default function BeachCard({ beach, rank }: BeachCardProps) {
 
         {/* 혼잡도 배지 */}
         <div className="absolute top-2 right-2 z-10">
-          <CrowdBadge level={beach.crowdLevel} />
+          <CrowdBadge level={calculateCrowdLevel(beach.id)} />
         </div>
 
         {/* 이미지 or 플레이스홀더 */}
