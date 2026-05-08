@@ -86,7 +86,7 @@ export default async function BeachDetailPage({
   ];
 
   /* 지도 링크 */
-  const kakaoMapUrl = `https://map.kakao.com/link/map/${encodeURIComponent(beach.name)},${beach.location.lat},${beach.location.lng}`;
+  const kakaoMapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(beach.name)}`;
   const naverMapUrl = `https://map.naver.com/v5/search/${encodeURIComponent(beach.name)}?c=${beach.location.lng},${beach.location.lat},15,0,0,0,dh`;
 
   return (
