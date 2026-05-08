@@ -27,9 +27,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const beach = await getBeachById(params.id);
   if (!beach) return { title: '해수욕장을 찾을 수 없어요 | 바다지금' };
-
   const weather = await getWeather(beach.id);
-
   return {
     title: `${beach.name} 실시간 현황 | 바다지금`,
     description: `${beach.name} 실시간 CCTV, 현재 기온 ${weather.temperature}°C, 수온 ${weather.waterTemp}°C. 혼잡도와 날씨를 한눈에 확인하세요.`,
@@ -114,19 +112,12 @@ export default async function BeachDetailPage({
       </div>
 
       {/* 혼잡도 배너 */}
-      {crowdLevel === 'high' && (
-        <div
-          className="bg-accent/10 border border-accent/20 rounded-2xl px-4 py-3
-                        text-sm text-red-600 font-medium"
-        >
+      {crowdLevel === 'high' ? (
+        <div className="bg-accent/10 border border-accent/20 rounded-2xl px-4 py-3 text-sm text-red-600 font-medium">
           {crowdMessage}
         </div>
-      )}
-      {crowdLevel !== 'high' && (
-        <div
-          className="bg-secondary/10 border border-secondary/20 rounded-2xl px-4 py-3
-                        text-sm text-teal-700 font-medium"
-        >
+      ) : (
+        <div className="bg-secondary/10 border border-secondary/20 rounded-2xl px-4 py-3 text-sm text-teal-700 font-medium">
           {crowdMessage}
         </div>
       )}
@@ -152,8 +143,7 @@ export default async function BeachDetailPage({
           {hourly.map((h) => (
             <div
               key={h.time}
-              className="shrink-0 bg-white rounded-2xl px-4 py-3 flex flex-col items-center
-                         gap-1.5 shadow-card min-w-[90px]"
+              className="shrink-0 bg-white rounded-2xl px-4 py-3 flex flex-col items-center gap-1.5 shadow-card min-w-[90px]"
             >
               <span className="text-xs text-navy/40 font-medium">{h.time}</span>
               <span className="text-2xl">{WEATHER_ICON[h.weatherIcon]}</span>
@@ -174,13 +164,10 @@ export default async function BeachDetailPage({
             <MapPin size={15} className="text-accent mt-0.5 shrink-0" />
             <span>{beach.address}</span>
           </div>
-
           <div className="flex items-center gap-2 text-sm text-navy/70">
             <Calendar size={15} className="text-primary shrink-0" />
             <span>운영 기간: {beach.operationPeriod}</span>
           </div>
-
-          {/* 편의시설 */}
           <div className="flex flex-wrap gap-2 pt-1">
             {facilities.map((f) => (
               <span
@@ -196,14 +183,13 @@ export default async function BeachDetailPage({
               </span>
             ))}
           </div>
-
-          {/* 길찾기 버튼 */}
-            href={`https://map.kakao.com/link/map/${encodeURIComponent(beach.name)},${beach.location.lat},${beach.location.lng}`}
+          <a
+            href={`https://map.kakao.com/link/map/${encodeURIComponent(
+              beach.name
+            )},${beach.location.lat},${beach.location.lng}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 mt-1 px-4 py-2 rounded-full
-                       bg-accent text-white text-sm font-medium
-                       hover:brightness-105 transition-all"
+            className="inline-flex items-center gap-2 mt-1 px-4 py-2 rounded-full bg-accent text-white text-sm font-medium hover:brightness-105 transition-all"
           >
             🗺️ 카카오맵으로 길찾기
           </a>
