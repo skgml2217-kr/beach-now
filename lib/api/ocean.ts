@@ -105,15 +105,24 @@ export async function fetchOceanData(beachId: string): Promise<OceanResult> {
         : Promise.resolve(null),
     ]);
 
+    /* 안전한 JSON 파싱 헬퍼 */
+    const safeParseJSON = async (res: Response): Promise<Record<string, unknown> | null> => {
+      try {
+        const text = await res.text();
+        console.log('[OCEAN] 응답 앞부분:', text.slice(0, 200));
+        if (!text || text.trim().startsWith('<')) return null;
+        return JSON.parse(text);
+      } catch {
+        return null;
+      }
+    };
+
     /* 수온 파싱 */
     let waterTemp = fallback.waterTemp;
     if (tempRes.ok) {
-      const text = await tempRes.text();
-      if (text.trim().startsWith('<')) {
-        console.warn('[OCEAN] 수온 XML 에러 응답 — 목 데이터 사용:', text.slice(0, 100));
-      } else {
-        const tempJson  = JSON.parse(text);
-        const tempItems = tempJson?.response?.body?.items?.item;
+      const tempJson = await safeParseJSON(tempRes);
+      if (tempJson) {
+        const tempItems = (tempJson as any)?.response?.body?.items?.item;
         const tempData  = Array.isArray(tempItems)
           ? tempItems[tempItems.length - 1]
           : tempItems;
@@ -125,12 +134,9 @@ export async function fetchOceanData(beachId: string): Promise<OceanResult> {
     /* 파고 파싱 */
     let waveHeight = fallback.waveHeight;
     if (waveRes && waveRes.ok) {
-      const text = await waveRes.text();
-      if (text.trim().startsWith('<')) {
-        console.warn('[OCEAN] 파고 XML 에러 응답 — 목 데이터 사용:', text.slice(0, 100));
-      } else {
-        const waveJson  = JSON.parse(text);
-        const waveItems = waveJson?.response?.body?.items?.item;
+      const waveJson = await safeParseJSON(waveRes);
+      if (waveJson) {
+        const waveItems = (waveJson as any)?.response?.body?.items?.item;
         const waveData  = Array.isArray(waveItems)
           ? waveItems[waveItems.length - 1]
           : waveItems;
