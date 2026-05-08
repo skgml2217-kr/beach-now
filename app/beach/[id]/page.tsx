@@ -176,28 +176,28 @@ export default async function BeachDetailPage({
           </div>
 
           {/* 지도 버튼 2개 */}
-          <div className="flex gap-2 flex-wrap mt-1">
-            <a
-              href={kakaoMapUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full
-                         bg-accent text-white text-sm font-medium
-                         hover:brightness-105 transition-all"
-            >
-              🗺️ 카카오맵
-            </a>
-            <a
-              href={naverMapUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full
-                         bg-primary text-white text-sm font-medium
-                         hover:brightness-105 transition-all"
-            >
-              🗺️ 네이버지도
-            </a>
-          </div>
+<div className="flex gap-2 flex-wrap mt-1">
+  
+    href={kakaoMapUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-2 px-4 py-2 rounded-full
+               text-sm font-medium hover:brightness-105 transition-all"
+    style={{ backgroundColor: '#FFCD00', color: '#3C1E1E' }}
+  >
+    🗺️ 카카오맵
+  </a>
+  
+    href={naverMapUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-2 px-4 py-2 rounded-full
+               text-sm font-medium hover:brightness-105 transition-all"
+    style={{ backgroundColor: '#03C75A', color: '#ffffff' }}
+  >
+    🗺️ 네이버지도
+  </a>
+</div>
         </div>
       </section>
 
