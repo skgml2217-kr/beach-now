@@ -1,7 +1,7 @@
 import { generateWeatherData } from '../mockData';
 
 const OCEAN_API_KEY = process.env.OCEAN_API_KEY ?? '';
-const BASE_URL = 'https://www.khoa.go.kr/api/oceangrid/tideObsRecent/search.do';
+const BASE_URL = 'https://apis.data.go.kr/1192136/surveyWaterTemp';
 
 /**
  * 해수욕장 ID → 국립해양조사원 조위관측소 코드 매핑
