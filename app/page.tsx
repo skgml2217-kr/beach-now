@@ -20,9 +20,9 @@ export default async function HomePage() {
         10
     ) / 10;
 
-  const avgTemp  = avg('temperature');
+  const avgTemp = avg('temperature');
   const avgWater = avg('waterTemp');
-  const avgWave  = avg('waveHeight');
+  const avgWave = avg('waveHeight');
 
   const today = new Date().toLocaleDateString('ko-KR', {
     month: 'long',
@@ -69,9 +69,21 @@ export default async function HomePage() {
 
           <div className="flex justify-center gap-3 flex-wrap">
             {[
-              { icon: <Thermometer size={16} />, label: '평균 기온', value: `${avgTemp}°C` },
-              { icon: <Droplets size={16} />,    label: '평균 수온', value: `${avgWater}°C` },
-              { icon: <Waves size={16} />,       label: '평균 파고', value: `${avgWave}m` },
+              {
+                icon: <Thermometer size={16} />,
+                label: '평균 기온',
+                value: `${avgTemp}°C`,
+              },
+              {
+                icon: <Droplets size={16} />,
+                label: '평균 수온',
+                value: `${avgWater}°C`,
+              },
+              {
+                icon: <Waves size={16} />,
+                label: '평균 파고',
+                value: `${avgWave}m`,
+              },
             ].map((item) => (
               <div
                 key={item.label}
@@ -91,8 +103,12 @@ export default async function HomePage() {
       <section id="home-recommend">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-navy">오늘 여기 어때요? ☀️</h2>
-            <p className="text-sm text-navy/50 mt-0.5">혼잡도 낮고 날씨 맑은 곳만 골랐어요</p>
+            <h2 className="text-xl font-bold text-navy">
+              오늘 여기 어때요? ☀️
+            </h2>
+            <p className="text-sm text-navy/50 mt-0.5">
+              혼잡도 낮고 날씨 맑은 곳만 골랐어요
+            </p>
           </div>
           <Link href="/list" className="text-sm text-primary hover:underline">
             전체 보기 →
@@ -107,10 +123,12 @@ export default async function HomePage() {
 
       {/* ── 섹션 C: 지역별 빠른 탐색 (#home-region-nav) ── */}
       <section id="home-region-nav">
-        <h2 className="text-xl font-bold text-navy mb-6">어느 바다로 갈까요? 🗺️</h2>
+        <h2 className="text-xl font-bold text-navy mb-6">
+          어느 바다로 갈까요? 🗺️
+        </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {(REGIONS.filter((r) => r !== 'all') as Region[]).map((r) => {
-            const meta  = REGION_META[r];
+            const meta = REGION_META[r];
             const count = MOCK_BEACHES.filter((b) => b.region === r).length;
             return (
               <Link
@@ -134,26 +152,34 @@ export default async function HomePage() {
       <section id="home-top5">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-navy">지금 핫한 해수욕장 🔥</h2>
-          <Link href="/list?sort=viewCount" className="text-sm text-primary hover:underline">
+          <Link
+            href="/list?sort=viewCount"
+            className="text-sm text-primary hover:underline"
+          >
             전체 보기 →
           </Link>
         </div>
 
         <div className="bg-white rounded-2xl shadow-card divide-y divide-navy/5">
           {top5.map((beach, i) => {
-            const rank       = i + 1;
-            const weather    = generateWeatherData(beach.id);
-            const region     = REGION_META[beach.region];
+            const rank = i + 1;
+            const weather = generateWeatherData(beach.id);
+            const region = REGION_META[beach.region];
             const crowdLevel = calculateCrowdLevel(beach.id);
             const RANK_BADGE = ['🥇', '🥈', '🥉'];
 
             const crowdStyle =
-              crowdLevel === 'low'    ? 'bg-secondary/20 text-teal-700' :
-              crowdLevel === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                                        'bg-accent/20 text-red-600';
+              crowdLevel === 'low'
+                ? 'bg-secondary/20 text-teal-700'
+                : crowdLevel === 'medium'
+                ? 'bg-yellow-100 text-yellow-700'
+                : 'bg-accent/20 text-red-600';
             const crowdText =
-              crowdLevel === 'low' ? '여유' :
-              crowdLevel === 'medium' ? '보통' : '혼잡';
+              crowdLevel === 'low'
+                ? '여유'
+                : crowdLevel === 'medium'
+                ? '보통'
+                : '혼잡';
 
             return (
               <Link
@@ -165,12 +191,16 @@ export default async function HomePage() {
                   {rank <= 3 ? (
                     <span className="text-xl">{RANK_BADGE[rank - 1]}</span>
                   ) : (
-                    <span className="text-sm font-bold text-navy/30">{rank}</span>
+                    <span className="text-sm font-bold text-navy/30">
+                      {rank}
+                    </span>
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-navy truncate">{beach.name}</div>
+                  <div className="font-bold text-navy truncate">
+                    {beach.name}
+                  </div>
                   <div className="text-xs text-navy/40">
                     {region.emoji} {region.label}
                   </div>
@@ -181,7 +211,9 @@ export default async function HomePage() {
                     <Thermometer size={13} className="inline text-accent" />{' '}
                     {weather.temperature}°
                   </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${crowdStyle}`}>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-full font-medium ${crowdStyle}`}
+                  >
                     {crowdText}
                   </span>
                 </div>
