@@ -87,8 +87,8 @@ export default async function BeachDetailPage({
 
   /* 지도 링크 */
   const kakaoMapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(beach.name)}`;
-  const naverMapUrl = `https://map.naver.com/v5/search/${encodeURIComponent(beach.name)}?c=${beach.location.lng},${beach.location.lat},15,0,0,0,dh`;
-
+  const naverMapUrl = 'https://map.naver.com/v5/search/' + encodeURIComponent(beach.name) + '?c=' + beach.location.lng + ',' + beach.location.lat + ',15,0,0,0,dh';
+  
   return (
     <div className="space-y-10 max-w-4xl mx-auto">
       {/* 뒤로가기 */}
