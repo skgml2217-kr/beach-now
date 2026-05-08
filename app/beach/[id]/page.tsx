@@ -110,7 +110,7 @@ export default async function BeachDetailPage({
           </span>
           <h1 className="text-3xl font-bold text-navy mt-1">{beach.name}</h1>
         </div>
-        <CrowdBadge level={beach.crowdLevel} />
+        <CrowdBadge level={crowdLevel} />
       </div>
 
       {/* 혼잡도 배너 */}
