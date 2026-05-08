@@ -1,20 +1,25 @@
 import type { WeatherData, HourlyForecast } from '../types';
 import { generateWeatherData, generateHourlyForecast } from '../mockData';
 
-const API_KEY = process.env.KMA_API_KEY ?? '';
+const API_KEY  = process.env.KMA_API_KEY ?? '';
 const BASE_URL = 'https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
 
-/* ── 현재 날짜·시각 헬퍼 ── */
+/* ── KST 기준 현재 시각 반환 ── */
+function getKST(): Date {
+  return new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+}
+
+/* ── 현재 날짜·시각 헬퍼 (KST 기준) ── */
 function getNowParams(): { baseDate: string; baseTime: string } {
-  const now = new Date();
-  const yyyy = now.getFullYear();
-  const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const dd = String(now.getDate()).padStart(2, '0');
+  const now  = getKST();
+  const yyyy = now.getUTCFullYear();
+  const mm   = String(now.getUTCMonth() + 1).padStart(2, '0');
+  const dd   = String(now.getUTCDate()).padStart(2, '0');
 
   // 초단기실황은 매 정시 발표 — 현재 시각의 정시로 맞춤
-  let hh = now.getHours();
+  let hh = now.getUTCHours();
   // 발표 후 10분 이내면 이전 시각 사용
-  if (now.getMinutes() < 10) hh -= 1;
+  if (now.getUTCMinutes() < 10) hh -= 1;
   if (hh < 0) hh = 23;
 
   return {
@@ -54,13 +59,13 @@ export async function fetchCurrentWeather(
     const { baseDate, baseTime } = getNowParams();
     const params = new URLSearchParams({
       serviceKey: API_KEY,
-      numOfRows: '10',
-      pageNo: '1',
-      dataType: 'JSON',
-      base_date: baseDate,
-      base_time: baseTime,
-      nx: String(nx),
-      ny: String(ny),
+      numOfRows:  '10',
+      pageNo:     '1',
+      dataType:   'JSON',
+      base_date:  baseDate,
+      base_time:  baseTime,
+      nx:         String(nx),
+      ny:         String(ny),
     });
 
     const res = await fetch(`${BASE_URL}/getUltraSrtNcst?${params}`, {
@@ -69,11 +74,10 @@ export async function fetchCurrentWeather(
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    const json = await res.json();
+    const json  = await res.json();
     const items: { category: string; obsrValue: string }[] =
       json?.response?.body?.items?.item ?? [];
 
-    /* 항목 파싱 */
     const get = (cat: string) =>
       parseFloat(items.find((i) => i.category === cat)?.obsrValue ?? '0');
 
@@ -82,23 +86,23 @@ export async function fetchCurrentWeather(
     const VEC = get('VEC'); // 풍향
     const PTY = get('PTY'); // 강수형태
 
-    const now = new Date();
-    now.setSeconds(0, 0);
+    // KST 기준 업데이트 시각
+    const kst = getKST();
+    kst.setUTCSeconds(0, 0);
 
     return {
-      temperature: T1H,
-      feelsLike:
-        Math.round((T1H - 0.4 * (T1H - 10) * (1 - WSD / 10)) * 10) / 10,
-      waterTemp: generateWeatherData(beachId).waterTemp, // 해양조사원 별도 연동
-      windSpeed: WSD,
+      temperature:   T1H,
+      feelsLike:     Math.round((T1H - 0.4 * (T1H - 10) * (1 - WSD / 10)) * 10) / 10,
+      waterTemp:     generateWeatherData(beachId).waterTemp,
+      windSpeed:     WSD,
       windDirection: vecToDirection(VEC),
-      waveHeight: generateWeatherData(beachId).waveHeight,
-      uvIndex: generateWeatherData(beachId).uvIndex,
-      rainProb: PTY > 0 ? 80 : 10,
-      sunrise: '05:42',
-      sunset: '19:38',
-      weatherIcon: ptyToIcon(PTY),
-      updatedAt: now.toISOString(),
+      waveHeight:    generateWeatherData(beachId).waveHeight,
+      uvIndex:       generateWeatherData(beachId).uvIndex,
+      rainProb:      PTY > 0 ? 80 : 10,
+      sunrise:       '05:42',
+      sunset:        '19:38',
+      weatherIcon:   ptyToIcon(PTY),
+      updatedAt:     kst.toISOString(),
     };
   } catch (err) {
     console.warn('[KMA] 실황 조회 실패 — 목 데이터 fallback:', err);
@@ -123,13 +127,13 @@ export async function fetchUltraForecast(
     const { baseDate, baseTime } = getNowParams();
     const params = new URLSearchParams({
       serviceKey: API_KEY,
-      numOfRows: '60',
-      pageNo: '1',
-      dataType: 'JSON',
-      base_date: baseDate,
-      base_time: baseTime,
-      nx: String(nx),
-      ny: String(ny),
+      numOfRows:  '60',
+      pageNo:     '1',
+      dataType:   'JSON',
+      base_date:  baseDate,
+      base_time:  baseTime,
+      nx:         String(nx),
+      ny:         String(ny),
     });
 
     const res = await fetch(`${BASE_URL}/getUltraSrtFcst?${params}`, {
@@ -138,11 +142,10 @@ export async function fetchUltraForecast(
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    const json = await res.json();
+    const json  = await res.json();
     const items: { category: string; fcstTime: string; fcstValue: string }[] =
       json?.response?.body?.items?.item ?? [];
 
-    /* 시각별로 그룹핑 */
     const byTime: Record<string, Record<string, string>> = {};
     for (const item of items) {
       if (!byTime[item.fcstTime]) byTime[item.fcstTime] = {};
@@ -151,15 +154,15 @@ export async function fetchUltraForecast(
 
     const result: HourlyForecast[] = [];
     for (const [time, cats] of Object.entries(byTime)) {
-      const hh = time.slice(0, 2);
+      const hh  = time.slice(0, 2);
       const T1H = parseFloat(cats['T1H'] ?? '0');
-      const PTY = parseInt(cats['PTY'] ?? '0', 10);
+      const PTY = parseInt(cats['PTY']   ?? '0', 10);
       const RN1 = parseFloat(cats['RN1'] ?? '0');
 
       result.push({
-        time: `${hh}:00`,
+        time:        `${hh}:00`,
         temperature: T1H,
-        rainProb: RN1 > 0 ? 80 : PTY > 0 ? 60 : 10,
+        rainProb:    RN1 > 0 ? 80 : PTY > 0 ? 60 : 10,
         weatherIcon: ptyToIcon(PTY),
       });
     }
