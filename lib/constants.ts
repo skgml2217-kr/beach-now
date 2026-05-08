@@ -62,10 +62,8 @@ export const CCTV_CAMERAS: Record<string, { label: string; url: string }[]> = {
     { label: '카메라 2', url: 'https://cctv.gbst.go.kr/view/gyeongpo2' },
   ],
   haeundae: [
-    { label: '중앙', url: 'https://cctv.haeundae.go.kr/view/center' },
-    { label: '동쪽', url: 'https://cctv.haeundae.go.kr/view/east' },
-    { label: '서쪽', url: 'https://cctv.haeundae.go.kr/view/west' },
-  ],
+  { label: '실시간', url: 'https://www.youtube.com/embed/live_stream?channel=UCZsIhpfgnO7nNrDWu7dj89g&autoplay=1&mute=1' },
+],
   gwangan: [
     { label: '카메라 1', url: 'https://cctv.suyeong.go.kr/view/gwangan1' },
   ],
