@@ -6,18 +6,20 @@ import { CrowdBadge } from '@/components/ui/Badge';
 import { REGION_META, WEATHER_ICON } from '@/lib/constants';
 import { generateWeatherData } from '@/lib/mockData';
 import { calculateCrowdLevel } from '@/lib/utils/crowdLevel';
-import type { Beach } from '@/lib/types';
+import type { Beach, WeatherData } from '@/lib/types';
 
 interface BeachCardProps {
   beach: Beach & { thumbnail?: string };
   rank?: number;
+  weather?: WeatherData;  // 외부에서 날씨 데이터 전달 가능
 }
 
 const RANK_STYLE = ['', '🥇', '🥈', '🥉', '4', '5'];
 
-export default function BeachCard({ beach, rank }: BeachCardProps) {
-  const weather = generateWeatherData(beach.id);
-  const region = REGION_META[beach.region];
+export default function BeachCard({ beach, rank, weather: weatherProp }: BeachCardProps) {
+  // props로 날씨가 전달되면 사용, 없으면 목 데이터 사용
+  const weather = weatherProp ?? generateWeatherData(beach.id);
+  const region  = REGION_META[beach.region];
 
   return (
     <Link
@@ -33,10 +35,8 @@ export default function BeachCard({ beach, rank }: BeachCardProps) {
             {rank <= 3 ? (
               <span className="text-2xl">{RANK_STYLE[rank]}</span>
             ) : (
-              <span
-                className="bg-white/80 backdrop-blur text-navy font-bold text-sm
-                               w-7 h-7 rounded-full flex items-center justify-center shadow"
-              >
+              <span className="bg-white/80 backdrop-blur text-navy font-bold text-sm
+                               w-7 h-7 rounded-full flex items-center justify-center shadow">
                 {rank}
               </span>
             )}
@@ -55,9 +55,7 @@ export default function BeachCard({ beach, rank }: BeachCardProps) {
             src={beach.thumbnail}
             alt={beach.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -71,10 +69,8 @@ export default function BeachCard({ beach, rank }: BeachCardProps) {
         {beach.thumbnail && <div className="absolute inset-0 bg-navy/10" />}
 
         {/* 하단 그라데이션 */}
-        <div
-          className="absolute bottom-0 inset-x-0 h-12
-                        bg-gradient-to-t from-white/60 to-transparent"
-        />
+        <div className="absolute bottom-0 inset-x-0 h-12
+                        bg-gradient-to-t from-white/60 to-transparent" />
       </div>
 
       {/* 카드 본문 */}
