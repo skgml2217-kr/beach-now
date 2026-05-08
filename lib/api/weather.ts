@@ -16,9 +16,7 @@ function getNowParams(): { baseDate: string; baseTime: string } {
   const mm   = String(now.getUTCMonth() + 1).padStart(2, '0');
   const dd   = String(now.getUTCDate()).padStart(2, '0');
 
-  // 초단기실황은 매 정시 발표 — 현재 시각의 정시로 맞춤
   let hh = now.getUTCHours();
-  // 발표 후 10분 이내면 이전 시각 사용
   if (now.getUTCMinutes() < 10) hh -= 1;
   if (hh < 0) hh = 23;
 
@@ -30,6 +28,7 @@ function getNowParams(): { baseDate: string; baseTime: string } {
 
 /* ── VEC(풍향 각도) → 방위 문자 변환 ── */
 function vecToDirection(vec: number): string {
+  if (isNaN(vec) || vec < 0) return '북';
   const dirs = ['북', '북동', '동', '남동', '남', '남서', '서', '북서'];
   return dirs[Math.round(vec / 45) % 8];
 }
@@ -40,6 +39,13 @@ function ptyToIcon(pty: number): string {
   if (pty === 1 || pty === 4) return 'rainy';
   if (pty === 2) return 'stormy';
   return 'cloudy';
+}
+
+/* ── 값 유효성 검사 ── */
+function isValidWeather(T1H: number, WSD: number): boolean {
+  if (isNaN(T1H) || T1H < -50 || T1H > 60)  return false;
+  if (isNaN(WSD) || WSD < 0   || WSD > 100) return false;
+  return true;
 }
 
 /* ──────────────────────────────────────
@@ -78,30 +84,43 @@ export async function fetchCurrentWeather(
     const items: { category: string; obsrValue: string }[] =
       json?.response?.body?.items?.item ?? [];
 
+    // 응답 항목이 없으면 fallback
+    if (!items.length) {
+      console.warn('[KMA] 응답 항목 없음 — 목 데이터 fallback');
+      return generateWeatherData(beachId);
+    }
+
     const get = (cat: string) =>
-      parseFloat(items.find((i) => i.category === cat)?.obsrValue ?? '0');
+      parseFloat(items.find((i) => i.category === cat)?.obsrValue ?? 'NaN');
 
     const T1H = get('T1H'); // 기온
     const WSD = get('WSD'); // 풍속
     const VEC = get('VEC'); // 풍향
     const PTY = get('PTY'); // 강수형태
 
-    // KST 기준 업데이트 시각
+    // 비정상 값 감지 시 목 데이터 사용
+    if (!isValidWeather(T1H, WSD)) {
+      console.warn(`[KMA] 비정상 값 감지 (T1H:${T1H}, WSD:${WSD}) — 목 데이터 fallback`);
+      return generateWeatherData(beachId);
+    }
+
     const kst = getKST();
     kst.setUTCSeconds(0, 0);
+
+    const mock = generateWeatherData(beachId);
 
     return {
       temperature:   T1H,
       feelsLike:     Math.round((T1H - 0.4 * (T1H - 10) * (1 - WSD / 10)) * 10) / 10,
-      waterTemp:     generateWeatherData(beachId).waterTemp,
+      waterTemp:     mock.waterTemp,
       windSpeed:     WSD,
       windDirection: vecToDirection(VEC),
-      waveHeight:    generateWeatherData(beachId).waveHeight,
-      uvIndex:       generateWeatherData(beachId).uvIndex,
-      rainProb:      PTY > 0 ? 80 : 10,
+      waveHeight:    mock.waveHeight,
+      uvIndex:       mock.uvIndex,
+      rainProb:      isNaN(PTY) ? 10 : PTY > 0 ? 80 : 10,
       sunrise:       '05:42',
       sunset:        '19:38',
-      weatherIcon:   ptyToIcon(PTY),
+      weatherIcon:   isNaN(PTY) ? 'sunny' : ptyToIcon(PTY),
       updatedAt:     kst.toISOString(),
     };
   } catch (err) {
@@ -146,6 +165,11 @@ export async function fetchUltraForecast(
     const items: { category: string; fcstTime: string; fcstValue: string }[] =
       json?.response?.body?.items?.item ?? [];
 
+    if (!items.length) {
+      console.warn('[KMA] 예보 항목 없음 — 목 데이터 fallback');
+      return generateHourlyForecast(beachId);
+    }
+
     const byTime: Record<string, Record<string, string>> = {};
     for (const item of items) {
       if (!byTime[item.fcstTime]) byTime[item.fcstTime] = {};
@@ -155,9 +179,12 @@ export async function fetchUltraForecast(
     const result: HourlyForecast[] = [];
     for (const [time, cats] of Object.entries(byTime)) {
       const hh  = time.slice(0, 2);
-      const T1H = parseFloat(cats['T1H'] ?? '0');
+      const T1H = parseFloat(cats['T1H'] ?? 'NaN');
       const PTY = parseInt(cats['PTY']   ?? '0', 10);
       const RN1 = parseFloat(cats['RN1'] ?? '0');
+
+      // 비정상 기온값 스킵
+      if (isNaN(T1H) || T1H < -50 || T1H > 60) continue;
 
       result.push({
         time:        `${hh}:00`,
@@ -166,6 +193,9 @@ export async function fetchUltraForecast(
         weatherIcon: ptyToIcon(PTY),
       });
     }
+
+    // 결과가 없으면 목 데이터 사용
+    if (!result.length) return generateHourlyForecast(beachId);
 
     return result.slice(0, 6);
   } catch (err) {
