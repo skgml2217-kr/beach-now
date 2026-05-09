@@ -149,7 +149,7 @@ export const MOCK_BEACHES: Beach[] = [
     id: 'mongsanpo',
     name: '몽산포해수욕장',
     region: 'west',
-    location: { lat: 36.6653, lng: 126.2258 },
+    location: { lat: 36.6701, lng: 126.2875 },
     address: '충청남도 태안군 남면 몽산포길',
     operationPeriod: '7월 5일 ~ 8월 18일',
     cctv_url: 'https://www.taean.go.kr',
