@@ -76,18 +76,30 @@ async function fetchByAreaCode(areaCode: string, region: Region): Promise<Beach[
     cat3:          'A01011700',
   });
 
-  const res = await fetch(`${BASE_URL}/areaBasedList2?${params}`, {
-    next: { revalidate: 0 },
-  });
+  const url = `${BASE_URL}/areaBasedList2?${params}`;
+  console.log(`[TOUR] 요청 URL (areaCode: ${areaCode}):`, url.slice(0, 150));
+
+  const res = await fetch(url, { next: { revalidate: 0 } });
 
   if (!res.ok) throw new Error(`HTTP ${res.status} (areaCode: ${areaCode})`);
 
-  const json     = await res.json();
-  const totalCount = json?.response?.body?.totalCount ?? 0;
-  const items    = json?.response?.body?.items?.item ?? [];
-  const list     = Array.isArray(items) ? items : [items];
+  const text = await res.text();
+  console.log(`[TOUR] areaCode ${areaCode} 응답 앞부분:`, text.slice(0, 200));
 
-  console.log(`[TOUR] areaCode ${areaCode} (${region}): 전체 ${totalCount}개 중 ${list.length}개 로드`);
+  // XML 응답이면 에러
+  if (text.trim().startsWith('<')) {
+    console.warn(`[TOUR] areaCode ${areaCode} XML 에러 응답`);
+    return [];
+  }
+
+  const json       = JSON.parse(text);
+  const header     = json?.response?.header;
+  const totalCount = json?.response?.body?.totalCount ?? 0;
+  const items      = json?.response?.body?.items?.item ?? [];
+  const list       = Array.isArray(items) ? items : (items ? [items] : []);
+
+  console.log(`[TOUR] areaCode ${areaCode} header:`, JSON.stringify(header));
+  console.log(`[TOUR] areaCode ${areaCode}: 전체 ${totalCount}개 중 ${list.length}개 로드`);
 
   return list.map((item: Record<string, string>) => mapTourApiToBeach(item, region));
 }
@@ -101,19 +113,16 @@ export async function fetchBeachList(region?: Region): Promise<Beach[]> {
   }
 
   try {
-    let targets: { code: string; region: Region }[]
+    let targets: { code: string; region: Region }[];
 
     if (region && region !== 'all') {
-      // 특정 지역만 조회
-      targets = AREA_CODES.filter((a) => a.region === region)
-      // 없으면 대표 코드로 fallback
+      targets = AREA_CODES.filter((a) => a.region === region);
       if (!targets.length) {
-        const code = REGION_AREA_CODE[region]
-        if (code) targets = [{ code, region }]
+        const code = REGION_AREA_CODE[region];
+        if (code) targets = [{ code, region }];
       }
     } else {
-      // 전체 조회
-      targets = AREA_CODES
+      targets = AREA_CODES;
     }
 
     const results = await Promise.all(
@@ -152,7 +161,7 @@ export async function fetchBeachDetail(
     });
 
     const res = await fetch(`${BASE_URL}/detailCommon2?${params}`, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 0 },
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
