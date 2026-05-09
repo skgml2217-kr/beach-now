@@ -77,7 +77,7 @@ async function fetchByAreaCode(areaCode: string, region: Region): Promise<Beach[
   });
 
   const res = await fetch(`${BASE_URL}/areaBasedList2?${params}`, {
-    next: { revalidate: 3600 },
+    next: { revalidate: 0 },
   });
 
   if (!res.ok) throw new Error(`HTTP ${res.status} (areaCode: ${areaCode})`);
