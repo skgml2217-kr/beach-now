@@ -79,7 +79,7 @@ async function fetchByAreaCode(areaCode: string, region: Region): Promise<Beach[
   const url = `${BASE_URL}/areaBasedList2?${params}`;
   console.log(`[TOUR] 요청 URL (areaCode: ${areaCode}):`, url.slice(0, 150));
 
-  const res = await fetch(url, { next: { revalidate: 3600 } });
+  const res = await fetch(url, { cache: 'force-cache' });
 
   if (!res.ok) throw new Error(`HTTP ${res.status} (areaCode: ${areaCode})`);
 
