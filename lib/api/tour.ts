@@ -67,7 +67,6 @@ async function fetchByAreaCode(areaCode: string, region: Region): Promise<Beach[
     MobileOS:      'ETC',
     MobileApp:     'BeachNow',
     _type:         'json',
-    listYN:        'Y',
     arrange:       'A',
     contentTypeId: '12',
     areaCode,
