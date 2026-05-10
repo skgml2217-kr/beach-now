@@ -84,7 +84,6 @@ export async function fetchCurrentWeather(
     const items: { category: string; obsrValue: string }[] =
       json?.response?.body?.items?.item ?? [];
 
-    // 응답 항목이 없으면 fallback
     if (!items.length) {
       console.warn('[KMA] 응답 항목 없음 — 목 데이터 fallback');
       return generateWeatherData(beachId);
@@ -93,12 +92,11 @@ export async function fetchCurrentWeather(
     const get = (cat: string) =>
       parseFloat(items.find((i) => i.category === cat)?.obsrValue ?? 'NaN');
 
-    const T1H = get('T1H'); // 기온
-    const WSD = get('WSD'); // 풍속
-    const VEC = get('VEC'); // 풍향
-    const PTY = get('PTY'); // 강수형태
+    const T1H = get('T1H');
+    const WSD = get('WSD');
+    const VEC = get('VEC');
+    const PTY = get('PTY');
 
-    // 비정상 값 감지 시 목 데이터 사용
     if (!isValidWeather(T1H, WSD)) {
       console.warn(`[KMA] 비정상 값 감지 (T1H:${T1H}, WSD:${WSD}) — 목 데이터 fallback`);
       return generateWeatherData(beachId);
@@ -106,7 +104,6 @@ export async function fetchCurrentWeather(
 
     const kst = getKST();
     kst.setUTCSeconds(0, 0);
-
     const mock = generateWeatherData(beachId);
 
     return {
@@ -165,8 +162,12 @@ export async function fetchUltraForecast(
     const items: { category: string; fcstTime: string; fcstValue: string }[] =
       json?.response?.body?.items?.item ?? [];
 
+    // 디버그 로그
+    console.log(`[KMA] ${beachId} 예보 items 수:`, items.length);
+    console.log(`[KMA] ${beachId} baseDate:${baseDate} baseTime:${baseTime} nx:${nx} ny:${ny}`);
+
     if (!items.length) {
-      console.warn('[KMA] 예보 항목 없음 — 목 데이터 fallback');
+      console.warn(`[KMA] ${beachId} 예보 항목 없음 — 목 데이터 fallback`);
       return generateHourlyForecast(beachId);
     }
 
@@ -176,6 +177,8 @@ export async function fetchUltraForecast(
       byTime[item.fcstTime][item.category] = item.fcstValue;
     }
 
+    console.log(`[KMA] ${beachId} byTime 키 목록:`, Object.keys(byTime).join(', '));
+
     const result: HourlyForecast[] = [];
     for (const [time, cats] of Object.entries(byTime)) {
       const hh  = time.slice(0, 2);
@@ -183,8 +186,12 @@ export async function fetchUltraForecast(
       const PTY = parseInt(cats['PTY']   ?? '0', 10);
       const RN1 = parseFloat(cats['RN1'] ?? '0');
 
-      // 비정상 기온값 스킵
-      if (isNaN(T1H) || T1H < -50 || T1H > 60) continue;
+      console.log(`[KMA] ${beachId} 예보 ${time}: T1H=${T1H}, PTY=${PTY}, RN1=${RN1}`);
+
+      if (isNaN(T1H) || T1H < -50 || T1H > 60) {
+        console.warn(`[KMA] ${beachId} 예보 ${time} 비정상 기온 스킵: ${T1H}`);
+        continue;
+      }
 
       result.push({
         time:        `${hh}:00`,
@@ -194,10 +201,14 @@ export async function fetchUltraForecast(
       });
     }
 
-    // 결과가 없으면 목 데이터 사용
-    if (!result.length) return generateHourlyForecast(beachId);
+    if (!result.length) {
+      console.warn(`[KMA] ${beachId} 예보 결과 없음 — 목 데이터 fallback`);
+      return generateHourlyForecast(beachId);
+    }
 
+    console.log(`[KMA] ${beachId} 예보 최종 결과:`, result.map(r => `${r.time}:${r.temperature}°`).join(', '));
     return result.slice(0, 6);
+
   } catch (err) {
     console.warn('[KMA] 예보 조회 실패 — 목 데이터 fallback:', err);
     return generateHourlyForecast(beachId);
