@@ -70,9 +70,6 @@ async function fetchByAreaCode(areaCode: string, region: Region): Promise<Beach[
     arrange:       'A',
     contentTypeId: '12',
     areaCode,
-    cat1:          'A01',
-    cat2:          'A0101',
-    cat3:          'A01011700',
   });
 
   const url = `${BASE_URL}/areaBasedList2?${params}`;
@@ -100,7 +97,17 @@ async function fetchByAreaCode(areaCode: string, region: Region): Promise<Beach[
   console.log(`[TOUR] areaCode ${areaCode} header:`, JSON.stringify(header));
   console.log(`[TOUR] areaCode ${areaCode}: 전체 ${totalCount}개 중 ${list.length}개 로드`);
 
-  return list.map((item: Record<string, string>) => mapTourApiToBeach(item, region));
+  // 해수욕장/해변/비치 관련 항목만 필터링
+  const beachList = list.filter((item: Record<string, string>) =>
+    item.title?.includes('해수욕장') ||
+    item.title?.includes('해변') ||
+    item.title?.includes('비치') ||
+    item.cat3 === 'A01011700'
+  );
+
+  console.log(`[TOUR] areaCode ${areaCode}: 해수욕장 필터 후 ${beachList.length}개`);
+
+  return beachList.map((item: Record<string, string>) => mapTourApiToBeach(item, region));
 }
 
 /* ── 해수욕장 목록 조회 ── */
@@ -160,7 +167,7 @@ export async function fetchBeachDetail(
     });
 
     const res = await fetch(`${BASE_URL}/detailCommon2?${params}`, {
-      next: { revalidate: 0 },
+      cache: 'force-cache',
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
